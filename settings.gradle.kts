@@ -15,4 +15,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "WTMapper"
 include(":app")
- 
+include(":reflection")
