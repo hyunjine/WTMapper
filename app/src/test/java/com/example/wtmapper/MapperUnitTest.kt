@@ -1,6 +1,7 @@
 package com.example.wtmapper
 
-import com.example.reflection.Mapper
+import android.util.Log
+import com.example.reflection.MapperObject
 import org.junit.Test
 
 import kotlin.time.measureTime
@@ -14,7 +15,8 @@ class MapperUnitTest {
     @Test
     fun addition_isCorrect() {
         println("start------------------------------------------------------------------\n")
-        executeReflection()
+//        executeReflection()
+        executeAnnotationProcessor()
     }
 
     private fun executeReflection() {
@@ -26,10 +28,19 @@ class MapperUnitTest {
         )
 
         val duration = measureTime {
-            val model = Mapper.from(entity, TestModel::class)
+            val model = MapperObject.from(entity, TestModel::class)
             println(model)
         }
         println("duration: $duration")
         println("\nend------------------------------------------------------------------")
+    }
+
+    private fun executeAnnotationProcessor() {
+        val user = User(
+            name = "Test",
+            email = "test@email.com"
+        )
+
+        println(user.toJson())
     }
 }

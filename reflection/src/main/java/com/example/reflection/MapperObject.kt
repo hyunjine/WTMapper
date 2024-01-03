@@ -6,7 +6,7 @@ import kotlin.reflect.full.findAnnotation
 import kotlin.reflect.full.memberProperties
 import kotlin.reflect.full.primaryConstructor
 
-object Mapper {
+object MapperObject {
     fun <T : Any> from(from: Any, toClass: KClass<T>): T? {
         val fromClass = from::class
         val fromParams = fromClass.memberProperties

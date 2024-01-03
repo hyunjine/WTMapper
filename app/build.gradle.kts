@@ -2,6 +2,7 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
+    kotlin("kapt")
 }
 
 android {
@@ -46,4 +47,7 @@ dependencies {
     androidTestImplementation(libs.espresso.core)
 
     implementation(project(":reflection"))
+    implementation(project(":mapper-annotation"))
+    kapt(project(":mapper-processor"))
+    implementation(project(":mapper-processor"))
 }
