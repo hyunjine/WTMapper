@@ -1,5 +1,6 @@
 package com.example.mapper_processor.kson
 
+import com.example.mapper_processor.BaseAbstractProcessor
 import com.google.auto.service.AutoService
 import com.squareup.kotlinpoet.FileSpec
 import com.squareup.kotlinpoet.FunSpec
@@ -15,22 +16,15 @@ import javax.lang.model.element.TypeElement
 
 
 @AutoService(Processor::class)
-class KsonProcessor : AbstractProcessor() {
+class KsonProcessor : BaseAbstractProcessor() {
 
     override fun getSupportedAnnotationTypes(): MutableSet<String> {
-        println("getSupportedAnnotationTypes")
         return mutableSetOf(Kson::class.java.name)
     }
 
-    override fun getSupportedSourceVersion(): SourceVersion {
-        return SourceVersion.latest()
-    }
-
     override fun process(set: MutableSet<out TypeElement>, roundEnv: RoundEnvironment): Boolean {
-        println("process")
         roundEnv.getElementsAnnotatedWith(Kson::class.java)
             .forEach {
-                println("Processing: ${it.simpleName}")
                 val pack = processingEnv.elementUtils.getPackageOf(it).toString()
                 generateClass(it, pack)
             }

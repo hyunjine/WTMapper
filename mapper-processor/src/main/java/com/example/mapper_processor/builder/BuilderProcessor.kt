@@ -1,5 +1,6 @@
 package com.example.mapper_processor.builder
 
+import com.example.mapper_processor.BaseAbstractProcessor
 import com.google.auto.service.AutoService
 import com.squareup.kotlinpoet.*
 import java.io.File
@@ -19,24 +20,19 @@ import javax.lang.model.util.ElementFilter.fieldsIn
 import javax.tools.Diagnostic
 
 @AutoService(Processor::class)
-class BuilderProcessor : AbstractProcessor() {
+class BuilderProcessor : BaseAbstractProcessor() {
 
     private val targetDirectory: String
         get() = processingEnv.options[KAPT_KOTLIN_GENERATED_OPTION]
             ?: throw IllegalStateException("Unable to get target directory")
-
-    override fun getSupportedSourceVersion(): SourceVersion {
-        return SourceVersion.latestSupported()
-    }
 
     override fun getSupportedAnnotationTypes(): MutableSet<String> {
         return mutableSetOf(Builder::class.java.name)
     }
 
     override fun process(annotations: MutableSet<out TypeElement>, roundEnv: RoundEnvironment): Boolean {
-
         if (roundEnv.processingOver()) {
-            processingEnv.noteMessage { "This round will not be subject to a subsequent round of annotation processing" }
+            noteMessage { "This round will not be subject to a subsequent round of annotation processing" }
         }
 
         return processAnnotation(roundEnv)
@@ -45,7 +41,7 @@ class BuilderProcessor : AbstractProcessor() {
     private fun processAnnotation(roundEnv: RoundEnvironment): Boolean {
         val elements = roundEnv.getElementsAnnotatedWith(Builder::class.java)
         if (elements.isEmpty()) {
-            processingEnv.noteMessage { "Not able to find @${Builder::class.java.name} in this round $roundEnv" }
+            noteMessage { "Not able to find @${Builder::class.java.name} in this round $roundEnv" }
             return true
         }
 
@@ -53,7 +49,7 @@ class BuilderProcessor : AbstractProcessor() {
             element as TypeElement
             when (element.kind) {
                 ElementKind.CLASS -> writeForClass(element)
-                else -> processingEnv.errorMessage { "The annotation is invalid for the element type ${element.simpleName}. Please add ${Builder::class.java.name} either on Constructor or Class" }
+                else -> errorMessage { "The annotation is invalid for the element type ${element.simpleName}. Please add ${Builder::class.java.name} either on Constructor or Class" }
             }
         }
 
@@ -64,12 +60,12 @@ class BuilderProcessor : AbstractProcessor() {
         val packageName = "${element.enclosingElement}".lowercase(Locale.getDefault())
         val fileName = "${element.simpleName}Builder".replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }
 
-        processingEnv.noteMessage { "Writing $packageName.$fileName" }
+        noteMessage { "Writing $packageName.$fileName" }
 
         val allMembers = processingEnv.elementUtils.getAllMembers(element)
         val fieldElements = fieldsIn(allMembers)
 
-        processingEnv.noteMessage { "All members for $packageName : $fieldElements" }
+        noteMessage { "All members for $packageName : $fieldElements" }
 
         val classBuilder = TypeSpec.objectBuilder(fileName)
         val builderClass = ClassName(packageName, fileName)
@@ -97,11 +93,11 @@ class BuilderProcessor : AbstractProcessor() {
     private fun TypeMirror.asKotlinType(): TypeName {
         return when (this) {
             is PrimitiveType -> {
-                processingEnv.noteMessage { "TypeMirror is PrimitiveType" }
+                noteMessage { "TypeMirror is PrimitiveType" }
                 processingEnv.typeUtils.boxedClass(this).asKotlinClassName()
             }
             is DeclaredType -> {
-                processingEnv.noteMessage { "TypeMirror is DeclaredType" }
+                noteMessage { "TypeMirror is DeclaredType" }
                 this.asTypeElement().asKotlinClassName()
             }
             else -> this.asTypeElement().asKotlinClassName()
@@ -180,16 +176,6 @@ class BuilderProcessor : AbstractProcessor() {
             // probably part of the same source tree as the annotated class
             className
         }
-    }
-
-    private fun ProcessingEnvironment.noteMessage(callback: () -> String) {
-        val msg = callback.invoke()
-        processingEnv.messager.printMessage(Diagnostic.Kind.NOTE, msg)
-    }
-
-    private fun ProcessingEnvironment.errorMessage(callback: () -> String) {
-        val msg = callback.invoke()
-        processingEnv.messager.printMessage(Diagnostic.Kind.ERROR, msg)
     }
 
     companion object {

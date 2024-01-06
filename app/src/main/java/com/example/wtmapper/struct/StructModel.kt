@@ -1,4 +1,4 @@
-package com.example.wtmapper.dd
+package com.example.wtmapper.struct
 
 data class StructModel(
     val seq: Long,

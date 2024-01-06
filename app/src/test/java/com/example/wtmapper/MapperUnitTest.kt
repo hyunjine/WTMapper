@@ -1,11 +1,15 @@
 package com.example.wtmapper
 
 import com.example.reflection.ReflectionLinker
-import com.example.wtmapper.dd.StructEntity
+import com.example.wtmapper.builder.BuilderEntityBuilder
+import com.example.wtmapper.struct.StructEntity
+import com.example.wtmapper.kson.KsonEntity
+import com.example.wtmapper.kson.toJson
 import com.example.wtmapper.linker.LinkerModel
 
 import com.example.wtmapper.reflection.ReflectionEntity
 import com.example.wtmapper.reflection.ReflectionModel
+import com.example.wtmapper.struct.StructConverterImpl
 import org.junit.Test
 import kotlin.time.measureTime
 
@@ -19,8 +23,14 @@ class MapperUnitTest {
     fun addition_isCorrect() {
         println("start------------------------------------------------------------------\n")
 //        executeReflection()
+//        println()
+//        executeBuilder()
+//        println()
+//        executeKson()
+//        println()
+//        executeStruct()
+//        println()
         executeLinker()
-
         println("\nend------------------------------------------------------------------")
     }
 
@@ -31,33 +41,52 @@ class MapperUnitTest {
             phoneNumber = "010-8544-7118",
             birthday = "1998.01.30"
         )
-        val duration = measureTime {
-            val model = ReflectionLinker.from(entity, ReflectionModel::class)
-            println(model)
-        }
-        println("duration: $duration")
+        val model = ReflectionLinker.from(entity, ReflectionModel::class)
+        println(model)
+//        val duration = measureTime {
+//            val model = ReflectionLinker.from(entity, ReflectionModel::class)
+//            println(model)
+//        }
+//        println("duration: $duration")
     }
 
-    private fun executeLinker() {
+    private fun executeBuilder() {
+        val entity = BuilderEntityBuilder
+            .seq(1998L)
+            .name("양현진")
+            .phoneNumber("010-8544-7118")
+            .birthday("1998.01.30")
+            .build()
+        println(entity)
+    }
+
+    private fun executeKson() {
+        val entity = KsonEntity(
+            seq = 1998L,
+            name = "양현진",
+            phoneNumber = "010-8544-7118",
+            birthday = "1998.01.30"
+        )
+        println(entity.toJson())
+    }
+
+    private fun executeStruct() {
         val entity = StructEntity(
             seq = 1998L,
             name = "양현진",
             phoneNumber = "010-8544-7118",
             birthday = "1998.01.30"
         )
+        val model = StructConverterImpl().from(entity)
+        println(model)
+    }
 
+    private fun executeLinker() {
         val model = LinkerModel(
             seq = 1998L,
             name = "양현진",
             phoneNumber = "010-8544-7118",
             birthday = "1998.01.30"
         )
-
-//        val a = KaptModelBuilder
-//            .birthday("")
-//            .build()
-
-
-//        val a = KaptLinker.execute(entity, KaptModel::class)
     }
 }
