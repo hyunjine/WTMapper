@@ -1,20 +1,18 @@
-package com.example.mapper_processor
+package com.example.mapper_processor.kson
 
-import com.example.mapper_annotation.Kson
 import com.google.auto.service.AutoService
 import com.squareup.kotlinpoet.FileSpec
 import com.squareup.kotlinpoet.FunSpec
 import com.squareup.kotlinpoet.asTypeName
 import java.io.File
 import javax.annotation.processing.AbstractProcessor
-import javax.annotation.processing.ProcessingEnvironment
 import javax.annotation.processing.Processor
 import javax.annotation.processing.RoundEnvironment
 import javax.lang.model.SourceVersion
 import javax.lang.model.element.Element
 import javax.lang.model.element.ElementKind
 import javax.lang.model.element.TypeElement
-import javax.tools.Diagnostic
+
 
 @AutoService(Processor::class)
 class KsonProcessor : AbstractProcessor() {

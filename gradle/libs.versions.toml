@@ -10,6 +10,8 @@ kotlinpoet = "1.15.3"
 lint = '31.2.0' # = agp + 23.0.0
 kotlin = '1.9.22'
 junit = '4.13.2'
+mapstruct-processor = "1.5.2.Final"
+mapstruct = "1.5.5.Final"
 material = "1.11.0"
 
 
@@ -29,6 +31,8 @@ lint-tests = { group = "com.android.tools.lint", name = "lint-tests", version.re
 junit = { group = "junit", name = "junit", version.ref  = "junit" }
 kotlin-reflect = { module = "org.jetbrains.kotlin:kotlin-reflect", version.ref = "kotlin" }
 kotlin-stdlib = { group = "org.jetbrains.kotlin", name = "kotlin-stdlib", version.ref = "kotlin" }
+mapstruct-processor = { module = "org.mapstruct:mapstruct-processor", version.ref = "mapstruct-processor" }
+mapstruct = { module = "org.mapstruct:mapstruct", version.ref = "mapstruct" }
 material = { module = "com.google.android.material:material", version.ref = "material" }
 
 [bundles]
@@ -51,4 +55,4 @@ android-library = { id = "com.android.library", version.ref = "agp" }
 android-lint = { id = "com.android.lint", version.ref = "agp" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
-kotlin-kapt = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+kotlin-kapt = { id = "org.jetbrains.kotlin.kapt", version.ref = "kotlin" }

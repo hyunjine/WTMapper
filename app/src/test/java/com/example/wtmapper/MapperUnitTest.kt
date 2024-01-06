@@ -1,9 +1,12 @@
 package com.example.wtmapper
 
-import android.util.Log
-import com.example.reflection.MapperObject
-import org.junit.Test
+import com.example.reflection.ReflectionLinker
+import com.example.wtmapper.dd.StructEntity
+import com.example.wtmapper.linker.LinkerModel
 
+import com.example.wtmapper.reflection.ReflectionEntity
+import com.example.wtmapper.reflection.ReflectionModel
+import org.junit.Test
 import kotlin.time.measureTime
 
 /**
@@ -16,31 +19,45 @@ class MapperUnitTest {
     fun addition_isCorrect() {
         println("start------------------------------------------------------------------\n")
 //        executeReflection()
-        executeAnnotationProcessor()
-    }
+        executeLinker()
 
-    private fun executeReflection() {
-        val entity = TestEntity(
-            seq = 20L,
-            name = "양현진",
-            phoneNumber = "010-1234-5678",
-            age = 27
-        )
-
-        val duration = measureTime {
-            val model = MapperObject.from(entity, TestModel::class)
-            println(model)
-        }
-        println("duration: $duration")
         println("\nend------------------------------------------------------------------")
     }
 
-    private fun executeAnnotationProcessor() {
-        val user = User(
-            name = "Test",
-            email = "test@email.com"
+    private fun executeReflection() {
+        val entity = ReflectionEntity(
+            seq = 1998L,
+            name = "양현진",
+            phoneNumber = "010-8544-7118",
+            birthday = "1998.01.30"
+        )
+        val duration = measureTime {
+            val model = ReflectionLinker.from(entity, ReflectionModel::class)
+            println(model)
+        }
+        println("duration: $duration")
+    }
+
+    private fun executeLinker() {
+        val entity = StructEntity(
+            seq = 1998L,
+            name = "양현진",
+            phoneNumber = "010-8544-7118",
+            birthday = "1998.01.30"
         )
 
-        println(user.toJson())
+        val model = LinkerModel(
+            seq = 1998L,
+            name = "양현진",
+            phoneNumber = "010-8544-7118",
+            birthday = "1998.01.30"
+        )
+
+//        val a = KaptModelBuilder
+//            .birthday("")
+//            .build()
+
+
+//        val a = KaptLinker.execute(entity, KaptModel::class)
     }
 }

@@ -1,8 +1,6 @@
 package com.example.reflection
 
-import kotlin.reflect.KFunction
-
 @Target(AnnotationTarget.PROPERTY, AnnotationTarget.VALUE_PARAMETER)
-annotation class Match(
+annotation class ReflectionSwap(
     val name: String
 )

@@ -47,7 +47,8 @@ dependencies {
     androidTestImplementation(libs.espresso.core)
 
     implementation(project(":reflection"))
-    implementation(project(":mapper-annotation"))
     kapt(project(":mapper-processor"))
     implementation(project(":mapper-processor"))
+    implementation(libs.mapstruct)
+    kapt(libs.mapstruct.processor)
 }

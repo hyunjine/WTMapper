@@ -3,6 +3,7 @@ plugins {
     id("java-library")
     alias(libs.plugins.kotlin.jvm)
     kotlin("kapt")
+
 }
 
 java {
@@ -15,6 +16,5 @@ dependencies {
     implementation(libs.auto.service)
     kapt(libs.auto.service)
     implementation(libs.kotlinpoet)
-
-    implementation(project(":mapper-annotation"))
+    implementation(libs.kotlin.reflect)
 }
