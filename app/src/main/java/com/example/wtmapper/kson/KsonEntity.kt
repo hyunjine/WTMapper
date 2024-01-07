@@ -2,7 +2,7 @@ package com.example.wtmapper.kson
 
 import com.example.mapper_processor.kson.Kson
 
-@Kson
+//@Kson
 data class KsonEntity(
     val seq: Long?,
     val name: String?,

@@ -2,7 +2,7 @@ package com.example.wtmapper.builder
 
 import com.example.mapper_processor.builder.Builder
 
-@Builder
+//@Builder
 data class BuilderEntity(
     val seq: Long?,
     val name: String?,
