@@ -6,6 +6,8 @@ import com.example.wtmapper.struct.StructEntity
 import com.example.wtmapper.kson.KsonEntity
 
 import com.example.wtmapper.linker.LinkerEntity
+import com.example.wtmapper.linker.LinkerModel
+import com.example.wtmapper.linker.LinkerModelLinkerUtil
 
 
 import com.example.wtmapper.reflection.ReflectionEntity
@@ -23,7 +25,10 @@ class MapperUnitTest {
     @Test
     fun addition_isCorrect() {
         println("start------------------------------------------------------------------\n")
-//        executeReflection()
+//        val d = measureTime {
+//            executeReflection()
+//        }
+//        println("$d")
 //        println()
 //        executeBuilder()
 //        println()
@@ -31,7 +36,16 @@ class MapperUnitTest {
 //        println()
 //        executeStruct()
 //        println()
-        executeLinker()
+        val duration = measureTime {
+//            map()
+            executeLinker()
+        }
+        val duration2 = measureTime {
+            map()
+//            executeLinker()
+        }
+        println("duration: $duration")
+        println("duration2: $duration2")
         println("\nend------------------------------------------------------------------")
     }
 
@@ -82,14 +96,33 @@ class MapperUnitTest {
         println(model)
     }
 
+    private fun map() {
+        val entity = LinkerEntity(
+            seqT= 1998L,
+            nameT = "양현진",
+            phoneNumberT = "010-8544-7118",
+            birthdayT = "1998.01.30"
+        )
+        requireNotNull(entity.seqT)
+        requireNotNull(entity.nameT)
+        requireNotNull(entity.phoneNumberT)
+        requireNotNull(entity.birthdayT)
+        val model =  LinkerModel(
+            seq = entity.seqT!!,
+            name = entity.nameT!!,
+            phoneNumber = entity.phoneNumberT!!,
+            birthday = entity.birthdayT!!,
+        )
+        println(model)
+    }
     private fun executeLinker() {
-//        val entity = LinkerEntity(
-//            seqT= 1998L,
-//            nameT = "양현진",
-//            phoneNumberT = "010-8544-7118",
-//            birthdayT = "1998.01.30"
-//        )
-//        val model = LinkerModelLinkerUtil.build(entity)
-//        println(model)
+        val entity = LinkerEntity(
+            seqT= 1998L,
+            nameT = "양현진",
+            phoneNumberT = "010-8544-7118",
+            birthdayT = "1998.01.30"
+        )
+        val model = LinkerModelLinkerUtil.build(entity)
+        println(model)
     }
 }

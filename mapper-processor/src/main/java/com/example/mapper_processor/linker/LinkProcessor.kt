@@ -1,6 +1,7 @@
 package com.example.mapper_processor.linker
 
 import com.example.mapper_processor.BaseAbstractProcessor
+import com.example.mapper_processor.builder.Builder
 import com.example.mapper_processor.builder.BuilderProcessor
 import com.example.mapper_processor.kson.KsonProcessor
 import com.google.auto.service.AutoService
@@ -30,6 +31,7 @@ import java.io.File
 import javax.annotation.processing.Processor
 import javax.annotation.processing.RoundEnvironment
 import javax.lang.model.element.Element
+import javax.lang.model.element.ElementKind
 import javax.lang.model.element.Modifier
 import javax.lang.model.element.TypeElement
 import javax.lang.model.type.ArrayType
@@ -59,21 +61,30 @@ class LinkProcessor : BaseAbstractProcessor() {
         roundEnv: RoundEnvironment
     ): Boolean {
         val elements = roundEnv.getElementsAnnotatedWith(Link::class.java)
-        errorMessage { annotations.toString() }
-        if (annotations.isEmpty()) {
+        if (elements.isEmpty()) {
             noteMessage { "Not able to find @${Link::class.java.name} in this round $roundEnv" }
-            return true
+            return false
         }
 
         for (element in elements) {
-            errorMessage { "??" }
-            val annotation = element.getAnnotation(Link::class.java)
-            runCatching {
-                annotation.kClass
-            }.onSuccess {
-                return true
+            element as TypeElement
+            when (element.kind) {
+                ElementKind.CLASS -> {
+                    writeForClass(element)
+                    return true
+                }
+                else -> errorMessage { "The annotation is invalid for the element type ${element.simpleName}. Please add ${Builder::class.java.name} either on Constructor or Class" }
             }
-                .onFailure { exception ->
+        }
+        return true
+    }
+
+    private fun writeForClass(element: TypeElement) {
+//        errorMessage { "??" }
+        val annotation = element.getAnnotation(Link::class.java)
+        runCatching {
+            annotation.kClass
+        }.onFailure { exception ->
                 if (exception is MirroredTypeException) {
                     val packageName = processingEnv.elementUtils.getPackageOf(element).toString()
                     val fileName = "${element.simpleName}LinkerUtil"
@@ -83,28 +94,21 @@ class LinkProcessor : BaseAbstractProcessor() {
                     val allMembers = processingEnv.elementUtils.getAllMembers(typeElement)
                     val fieldElements = ElementFilter.fieldsIn(allMembers)
 
-                    errorMessage { "$className ${className.tags}" }
-                    errorMessage { "$fieldElements" }
+//                    errorMessage { "$className ${className.tags}" }
+//                    errorMessage { "$fieldElements" }
 
                     val allMembers2 = processingEnv.elementUtils.getAllMembers(element as TypeElement)
                     val valueElements = ElementFilter.fieldsIn(allMembers2)
                     val classBuilder = TypeSpec.objectBuilder(fileName)
 
-//                    classBuilder.addFunction(createBuildMethod(typeElement, element, fieldElements, valueElements))
-//
-//                    val file = FileSpec.builder(packageName, fileName)
-//                        .addType(classBuilder.build())
-//                        .build()
-//                    file.writeTo(File(targetDirectory))
-                    errorMessage { "rr" }
-                    return true
-                } else {
-                    return true
+                    classBuilder.addFunction(createBuildMethod(typeElement, element, fieldElements, valueElements))
+
+                    val file = FileSpec.builder(packageName, fileName)
+                        .addType(classBuilder.build())
+                        .build()
+                    file.writeTo(File(targetDirectory))
                 }
             }
-        }
-        errorMessage { "zxczxc" }
-        return true
     }
 
     private fun createBuildMethod(typeElement: TypeElement, modelElement: TypeElement, fieldElements: List<Element>, valueElements: List<Element>): FunSpec {
@@ -115,30 +119,30 @@ class LinkProcessor : BaseAbstractProcessor() {
                 fieldNullCheck.append("requireNotNull(entity.$field)").appendLine()
             }
             addCode(fieldNullCheck.toString())
-        }.build()
+        }
+
+            .returns(ClassName("${modelElement.enclosingElement}", "${modelElement.simpleName}"))
+            .apply {
+                val code = StringBuilder()
+                val iterator = fieldElements.listIterator()
+                repeat((fieldElements.indices).count()) {
+                    val field = fieldElements[it]
+                    val value = valueElements[it]
+                    code.appendLine()
+                    code.append("\t$value = entity.$field")
+                    if (iterator.hasNext()) {
+                        code.append(",")
+                    }
+                }
+                addCode(
+                    """
+                    |return ${modelElement.simpleName}($code
+                    |)
+                """.trimMargin()
+                )
+            }
+            .build()
     }
-//            .returns(ClassName("${modelElement.enclosingElement}", "${modelElement.simpleName}"))
-//            .apply {
-//                val code = StringBuilder()
-//                val iterator = fieldElements.listIterator()
-//                repeat((fieldElements.indices).count()) {
-//                    val field = fieldElements[it]
-//                    val value = valueElements[it]
-//                    code.appendLine()
-//                    code.append("\t$value = entity.$field")
-//                    if (iterator.hasNext()) {
-//                        code.append(",")
-//                    }
-//                }
-//                addCode(
-//                    """
-//                    |return ${modelElement.simpleName}($code
-//                    |)
-//                """.trimMargin()
-//                )
-//            }
-//            .build()
-//    }
 
     private fun TypeMirror.asTypeElement() = processingEnv.typeUtils.asElement(this) as TypeElement
 
