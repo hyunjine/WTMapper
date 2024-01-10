@@ -16,4 +16,5 @@ dependencyResolutionManagement {
 rootProject.name = "WTMapper"
 include(":app")
 include(":reflection")
-include(":mapper-processor")
+include(":kapt-processor")
+include(":ksp-processor")
