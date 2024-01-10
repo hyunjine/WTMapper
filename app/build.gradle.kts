@@ -51,4 +51,5 @@ dependencies {
     implementation(project(":mapper-processor"))
     implementation(libs.mapstruct)
     kapt(libs.mapstruct.processor)
+    implementation(libs.kotlin.reflect)
 }

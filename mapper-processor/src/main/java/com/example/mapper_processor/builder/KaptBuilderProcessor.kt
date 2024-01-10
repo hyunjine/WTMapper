@@ -5,11 +5,8 @@ import com.google.auto.service.AutoService
 import com.squareup.kotlinpoet.*
 import java.io.File
 import java.util.Locale
-import javax.annotation.processing.AbstractProcessor
-import javax.annotation.processing.ProcessingEnvironment
 import javax.annotation.processing.Processor
 import javax.annotation.processing.RoundEnvironment
-import javax.lang.model.SourceVersion
 import javax.lang.model.element.Element
 import javax.lang.model.element.ElementKind
 import javax.lang.model.element.TypeElement
@@ -17,17 +14,16 @@ import javax.lang.model.type.DeclaredType
 import javax.lang.model.type.PrimitiveType
 import javax.lang.model.type.TypeMirror
 import javax.lang.model.util.ElementFilter.fieldsIn
-import javax.tools.Diagnostic
 
 @AutoService(Processor::class)
-class BuilderProcessor : BaseAbstractProcessor() {
+class KaptBuilderProcessor : BaseAbstractProcessor() {
 
     private val targetDirectory: String
         get() = processingEnv.options[KAPT_KOTLIN_GENERATED_OPTION]
             ?: throw IllegalStateException("Unable to get target directory")
 
     override fun getSupportedAnnotationTypes(): MutableSet<String> {
-        return mutableSetOf(Builder::class.java.name)
+        return mutableSetOf(KaptBuilder::class.java.name)
     }
 
     override fun process(annotations: MutableSet<out TypeElement>, roundEnv: RoundEnvironment): Boolean {
@@ -39,9 +35,9 @@ class BuilderProcessor : BaseAbstractProcessor() {
     }
 
     private fun processAnnotation(roundEnv: RoundEnvironment): Boolean {
-        val elements = roundEnv.getElementsAnnotatedWith(Builder::class.java)
+        val elements = roundEnv.getElementsAnnotatedWith(KaptBuilder::class.java)
         if (elements.isEmpty()) {
-            noteMessage { "Not able to find @${Builder::class.java.name} in this round $roundEnv" }
+            noteMessage { "Not able to find @${KaptBuilder::class.java.name} in this round $roundEnv" }
             return true
         }
 
@@ -49,7 +45,7 @@ class BuilderProcessor : BaseAbstractProcessor() {
             element as TypeElement
             when (element.kind) {
                 ElementKind.CLASS -> writeForClass(element)
-                else -> errorMessage { "The annotation is invalid for the element type ${element.simpleName}. Please add ${Builder::class.java.name} either on Constructor or Class" }
+                else -> errorMessage { "The annotation is invalid for the element type ${element.simpleName}. Please add ${KaptBuilder::class.java.name} either on Constructor or Class" }
             }
         }
 

@@ -5,4 +5,4 @@ import kotlin.reflect.KClass
 @Retention(AnnotationRetention.SOURCE)
 @Target(AnnotationTarget.CLASS, AnnotationTarget.FUNCTION)
 @MustBeDocumented
-annotation class Link(val kClass: KClass<*>)
+annotation class KaptLink(val kClass: KClass<*>)

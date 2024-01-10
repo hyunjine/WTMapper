@@ -1,10 +1,10 @@
 package com.example.mapper_processor.linker
 
-import kotlin.reflect.KClass
-
-object Linker {
+object KaptLinker {
 
 //    fun <T : Any> execute(from: Any, to: KClass<T>): T {
+//        return from.build(to)
+//        return build(from)
 //        return from.
 //    }
 }

@@ -7,13 +7,17 @@ import com.example.wtmapper.kson.KsonEntity
 
 import com.example.wtmapper.linker.LinkerEntity
 import com.example.wtmapper.linker.LinkerModel
-import com.example.wtmapper.linker.LinkerModelLinkerUtil
+import com.example.wtmapper.linker.build
+//import com.example.wtmapper.linker.LinkerModelLinkerUtil
 
 
 import com.example.wtmapper.reflection.ReflectionEntity
 import com.example.wtmapper.reflection.ReflectionModel
 import com.example.wtmapper.struct.StructConverterImpl
+import com.example.wtmapper.struct.StructModel
 import org.junit.Test
+import org.mapstruct.factory.Mappers
+import kotlin.reflect.full.declaredMemberProperties
 import kotlin.time.measureTime
 
 /**
@@ -44,6 +48,7 @@ class MapperUnitTest {
             map()
 //            executeLinker()
         }
+
         println("duration: $duration")
         println("duration2: $duration2")
         println("\nend------------------------------------------------------------------")
@@ -92,6 +97,8 @@ class MapperUnitTest {
             phoneNumber = "010-8544-7118",
             birthday = "1998.01.30"
         )
+        val a = Mappers.getMapper(StructModel::class.java)
+
         val model = StructConverterImpl().from(entity)
         println(model)
     }
@@ -122,7 +129,15 @@ class MapperUnitTest {
             phoneNumberT = "010-8544-7118",
             birthdayT = "1998.01.30"
         )
-        val model = LinkerModelLinkerUtil.build(entity)
-        println(model)
+
+        val model = LinkerModel(
+            seq= 1998L,
+            name = "양현진",
+            phoneNumber = "010-8544-7118",
+            birthday = "1998.01.30"
+        )
+//        model.build(entity)
+//        val model = LinkerModelLinkerUtil.build(entity)
+//        println(model)
     }
 }

@@ -1,30 +1,14 @@
 package com.example.mapper_processor.linker
 
 import com.example.mapper_processor.BaseAbstractProcessor
-import com.example.mapper_processor.builder.Builder
-import com.example.mapper_processor.builder.BuilderProcessor
-import com.example.mapper_processor.kson.KsonProcessor
+import com.example.mapper_processor.builder.KaptBuilder
+import com.example.mapper_processor.builder.KaptBuilderProcessor
 import com.google.auto.service.AutoService
-import com.squareup.kotlinpoet.ARRAY
-import com.squareup.kotlinpoet.BOOLEAN
-import com.squareup.kotlinpoet.BYTE
-import com.squareup.kotlinpoet.CHAR
 import com.squareup.kotlinpoet.ClassName
-import com.squareup.kotlinpoet.DOUBLE
-import com.squareup.kotlinpoet.FLOAT
 import com.squareup.kotlinpoet.FileSpec
 import com.squareup.kotlinpoet.FunSpec
-import com.squareup.kotlinpoet.INT
-import com.squareup.kotlinpoet.KModifier
-import com.squareup.kotlinpoet.LONG
-import com.squareup.kotlinpoet.ParameterizedTypeName
-import com.squareup.kotlinpoet.PropertySpec
-import com.squareup.kotlinpoet.SHORT
 import com.squareup.kotlinpoet.TypeName
 import com.squareup.kotlinpoet.TypeSpec
-import com.squareup.kotlinpoet.TypeVariableName
-import com.squareup.kotlinpoet.UNIT
-import com.squareup.kotlinpoet.WildcardTypeName
 import com.squareup.kotlinpoet.asClassName
 import com.squareup.kotlinpoet.asTypeName
 import java.io.File
@@ -32,37 +16,43 @@ import javax.annotation.processing.Processor
 import javax.annotation.processing.RoundEnvironment
 import javax.lang.model.element.Element
 import javax.lang.model.element.ElementKind
-import javax.lang.model.element.Modifier
 import javax.lang.model.element.TypeElement
-import javax.lang.model.type.ArrayType
 import javax.lang.model.type.DeclaredType
-import javax.lang.model.type.ErrorType
 import javax.lang.model.type.MirroredTypeException
-import javax.lang.model.type.NoType
 import javax.lang.model.type.PrimitiveType
-import javax.lang.model.type.TypeKind
 import javax.lang.model.type.TypeMirror
 import javax.lang.model.util.ElementFilter
-import javax.lang.model.util.SimpleTypeVisitor8
 
 
 @AutoService(Processor::class)
-class LinkProcessor : BaseAbstractProcessor() {
+class KaptLinkProcessor : BaseAbstractProcessor() {
     override fun getSupportedAnnotationTypes(): MutableSet<String> {
-        return mutableSetOf(Link::class.java.name)
+        return mutableSetOf(
+            KaptLink::class.java.name,
+            KaptSwap2::class.java.name
+        )
     }
 
     private val targetDirectory: String
-        get() = processingEnv.options[BuilderProcessor.KAPT_KOTLIN_GENERATED_OPTION]
+        get() = processingEnv.options[KaptBuilderProcessor.KAPT_KOTLIN_GENERATED_OPTION]
             ?: throw IllegalStateException("Unable to get target directory")
 
     override fun process(
         annotations: MutableSet<out TypeElement>,
         roundEnv: RoundEnvironment
     ): Boolean {
-        val elements = roundEnv.getElementsAnnotatedWith(Link::class.java)
+//        val test = roundEnv.getElementsAnnotatedWith(Swap2::class.java)
+//        test.forEach {
+//
+//            val d = it.getAnnotation(Swap2::class.java)
+//            if (d != null) {
+//                noteMessage { "${it.simpleName} ${d.value}" }
+//            }
+//        }
+
+        val elements = roundEnv.getElementsAnnotatedWith(KaptLink::class.java)
         if (elements.isEmpty()) {
-            noteMessage { "Not able to find @${Link::class.java.name} in this round $roundEnv" }
+            noteMessage { "Not able to find @${KaptLink::class.java.name} in this roundS $roundEnv" }
             return false
         }
 
@@ -71,9 +61,8 @@ class LinkProcessor : BaseAbstractProcessor() {
             when (element.kind) {
                 ElementKind.CLASS -> {
                     writeForClass(element)
-                    return true
                 }
-                else -> errorMessage { "The annotation is invalid for the element type ${element.simpleName}. Please add ${Builder::class.java.name} either on Constructor or Class" }
+                else -> errorMessage { "The annotation is invalid for the element type ${element.simpleName}. Please add ${KaptBuilder::class.java.name} either on Constructor or Class" }
             }
         }
         return true
@@ -81,7 +70,7 @@ class LinkProcessor : BaseAbstractProcessor() {
 
     private fun writeForClass(element: TypeElement) {
 //        errorMessage { "??" }
-        val annotation = element.getAnnotation(Link::class.java)
+        val annotation = element.getAnnotation(KaptLink::class.java)
         runCatching {
             annotation.kClass
         }.onFailure { exception ->
@@ -94,6 +83,14 @@ class LinkProcessor : BaseAbstractProcessor() {
                     val allMembers = processingEnv.elementUtils.getAllMembers(typeElement)
                     val fieldElements = ElementFilter.fieldsIn(allMembers)
 
+                    element.enclosedElements.forEach {
+                        noteMessage { it.simpleName.toString() }
+                        val nn = it.getAnnotation(KaptSwap2::class.java)
+                        if (nn != null) {
+                            noteMessage { "!!!!!!!!!@@@@@@@@@@@@$nn" }
+                        }
+                    }
+
 //                    errorMessage { "$className ${className.tags}" }
 //                    errorMessage { "$fieldElements" }
 
@@ -101,10 +98,9 @@ class LinkProcessor : BaseAbstractProcessor() {
                     val valueElements = ElementFilter.fieldsIn(allMembers2)
                     val classBuilder = TypeSpec.objectBuilder(fileName)
 
-                    classBuilder.addFunction(createBuildMethod(typeElement, element, fieldElements, valueElements))
-
                     val file = FileSpec.builder(packageName, fileName)
-                        .addType(classBuilder.build())
+                        .addFunction(createBuildMethod(typeElement, element, fieldElements, valueElements))
+//                        .addType(classBuilder.build())
                         .build()
                     file.writeTo(File(targetDirectory))
                 }
@@ -122,12 +118,20 @@ class LinkProcessor : BaseAbstractProcessor() {
         }
 
             .returns(ClassName("${modelElement.enclosingElement}", "${modelElement.simpleName}"))
+            .receiver(modelElement.asType().asTypeName())
             .apply {
                 val code = StringBuilder()
                 val iterator = fieldElements.listIterator()
                 repeat((fieldElements.indices).count()) {
                     val field = fieldElements[it]
                     val value = valueElements[it]
+
+                    val ann = value.getAnnotation(KaptSwap2::class.java)
+                    noteMessage { value.simpleName.toString() }
+                    if (ann != null) {
+                        noteMessage { "test: ${ann}" }
+                    }
+
                     code.appendLine()
                     code.append("\t$value = entity.$field")
                     if (iterator.hasNext()) {

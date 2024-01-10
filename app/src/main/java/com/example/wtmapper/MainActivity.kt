@@ -2,6 +2,8 @@ package com.example.wtmapper
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
+import com.example.wtmapper.struct.StructConverter
+import org.mapstruct.factory.Mappers
 
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
