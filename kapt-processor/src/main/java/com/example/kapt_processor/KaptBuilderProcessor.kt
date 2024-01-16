@@ -8,6 +8,7 @@ import java.util.Locale
 import javax.annotation.processing.AbstractProcessor
 import javax.annotation.processing.Processor
 import javax.annotation.processing.RoundEnvironment
+import javax.lang.model.SourceVersion
 import javax.lang.model.element.Element
 import javax.lang.model.element.ElementKind
 import javax.lang.model.element.TypeElement
@@ -25,8 +26,11 @@ class KaptBuilderProcessor : AbstractProcessor() {
             ?: throw IllegalStateException("Unable to get target directory")
 
     override fun getSupportedAnnotationTypes(): MutableSet<String> {
-        processingEnv
         return mutableSetOf(KaptBuilder::class.java.name)
+    }
+
+    override fun getSupportedSourceVersion(): SourceVersion {
+        return SourceVersion.RELEASE_17
     }
 
     override fun process(annotations: MutableSet<out TypeElement>, roundEnv: RoundEnvironment): Boolean {
@@ -59,7 +63,7 @@ class KaptBuilderProcessor : AbstractProcessor() {
         val packageName = "${element.enclosingElement}".lowercase(Locale.getDefault())
         val fileName = "${element.simpleName}Builder".replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }
 
-        noteMessage { "Writing $packageName.$fileName" }
+        noteMessage { "Writing $packageName.$fileName s" }
 
         val allMembers = processingEnv.elementUtils.getAllMembers(element)
         val fieldElements = fieldsIn(allMembers)

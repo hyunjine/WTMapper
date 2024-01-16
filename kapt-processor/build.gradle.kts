@@ -9,6 +9,6 @@ dependencies {
     compileOnly(project(":kapt-annotations"))
     implementation(libs.autoservice)
     kapt(libs.autoservice)
-    implementation(libs.kotlinpoet)
-    implementation(libs.kotlin.reflect)
+    implementation(libs.kotlinPoet)
+    implementation(kotlin("reflect"))
 }
