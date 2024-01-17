@@ -115,6 +115,7 @@ class KaptLinkProcessor : AbstractProcessor() {
             for (field in fieldElements) {
                 fieldNullCheck.append("requireNotNull(entity.$field)").appendLine()
             }
+
             addCode(fieldNullCheck.toString())
         }
 
