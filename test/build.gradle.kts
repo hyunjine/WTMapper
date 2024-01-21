@@ -8,6 +8,7 @@ plugins {
 
 dependencies {
     implementation(libs.junit)
+    implementation(project(":reflection"))
     implementation(project(":kapt-annotations"))
     kapt(project(":kapt-processor"))
     implementation(project(":ksp-annotations"))
