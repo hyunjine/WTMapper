@@ -51,7 +51,10 @@ class KaptLinkProcessor : AbstractProcessor() {
 //            }
 //        }
 
-        val elements = roundEnv.getElementsAnnotatedWith(KaptLink::class.java)
+        val elements = roundEnv
+            .getElementsAnnotatedWith(KaptLink::class.java)
+            .filterIsInstance<TypeElement>()
+        noteMessage { elements }
         if (elements.isEmpty()) {
             noteMessage { "Not able to find @${KaptLink::class.java.name} in this roundS $roundEnv" }
             return false
@@ -182,9 +185,9 @@ class KaptLinkProcessor : AbstractProcessor() {
         }
     }
 
-    private fun noteMessage(callback: () -> String) {
+    private fun noteMessage(callback: () -> Any?) {
         val msg = callback.invoke()
-        processingEnv.messager.printMessage(Diagnostic.Kind.NOTE, msg)
+        processingEnv.messager.printMessage(Diagnostic.Kind.NOTE, msg.toString())
     }
 
     private fun errorMessage(callback: () -> String) {

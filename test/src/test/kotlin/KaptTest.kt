@@ -3,8 +3,6 @@ import com.example.kapt_annotations.KaptLink
 import org.junit.Test
 
 class KaptTest {
-
-//    @KaptBuilder
     @KaptLink(KaptEntity::class)
     data class KaptModel(
         val seq: Long,
@@ -14,7 +12,6 @@ class KaptTest {
         val content: String,
     )
 
-    @KaptBuilder
     data class KaptEntity(
         val seq: Long,
         val title: String,

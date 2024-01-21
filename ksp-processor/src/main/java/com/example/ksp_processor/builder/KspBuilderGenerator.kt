@@ -141,7 +141,6 @@ class KspBuilderGenerator(
     private fun SimpleClassDescriptor.makeCopyConstructor() =
         FunSpec.constructorBuilder().callThisConstructor()
             .addParameter("o", ClassName(packageName, simpleName)).apply {
-                logger.warn("$packageName $simpleName")
                 for (prop in properties) {
                     addStatement("this.${prop.name} = o.${prop.name}${prop.fromObjectConverter}")
                 }

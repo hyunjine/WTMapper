@@ -23,6 +23,6 @@ import com.google.devtools.ksp.processing.SymbolProcessorProvider
 @AutoService(SymbolProcessorProvider::class)
 class KspLinkGeneratorProvider : SymbolProcessorProvider {
     override fun create(environment: SymbolProcessorEnvironment): SymbolProcessor {
-        return KspLinkGenerator(environment.codeGenerator, environment.logger)
+        return KspLinkProcessor(environment.codeGenerator, environment.logger)
     }
 }
