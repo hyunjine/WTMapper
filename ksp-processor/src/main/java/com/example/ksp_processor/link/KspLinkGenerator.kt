@@ -105,19 +105,19 @@ class KspLinkGenerator(
      */
     @OptIn(KspExperimental::class)
     private fun parseKSClassDeclaration(input: KSClassDeclaration, output: KSClassDeclaration) {
-//        val primaryConstructor = input.getAllFunctions()
-//            .filter { it.isConstructor() }
-//            .firstOrNull() ?: error("") // TODO 에러처리
-//        val fromProperties = primaryConstructor.parameters
+        val primaryConstructor = input.getAllFunctions()
+            .filter { it.isConstructor() }
+            .firstOrNull() ?: error("") // TODO 에러처리
+        val fromProperties = primaryConstructor.parameters
 
-//        for (property in fromProperties) {
-//            val linkName = property.getAnnotationsByType(KspLinkName::class).firstOrNull()
-//            if (linkName != null) {
-//                linkName.name
-//            } else {
-//                // TODO 에러처리
-//            }
-//        }
+        for (property in fromProperties) {
+            val linkName = property.getAnnotationsByType(KspLinkName::class).firstOrNull()
+            if (linkName != null) {
+                logger.d(linkName.name)
+            } else {
+                // TODO 에러처리
+            }
+        }
 
         val inputClassName = input.toClassName()
         val outputClassName = output.toClassName()
@@ -142,7 +142,7 @@ class KspLinkGenerator(
             .addType(
                 TypeSpec.classBuilder(linkerClassName).apply {
 
-                    val classNames = ClassName(packageName, simpleName)
+                    val classNames = output.toClassName()
 
                     val temp = outputPropertyNames.map {
                         "$it = entity.$it"
