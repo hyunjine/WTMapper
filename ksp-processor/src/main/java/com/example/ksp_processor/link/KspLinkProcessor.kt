@@ -16,11 +16,12 @@
 package com.example.ksp_processor.link
 
 import com.example.kps_annotations.KspLink
+import com.example.kps_annotations.KspLinkApp
 import com.example.kps_annotations.KspLinkName
+import com.example.kps_annotations.KspLinkTest
 import com.google.devtools.ksp.KSTypeNotPresentException
 import com.google.devtools.ksp.KspExperimental
 import com.google.devtools.ksp.getAnnotationsByType
-import com.google.devtools.ksp.isConstructor
 import com.google.devtools.ksp.processing.CodeGenerator
 import com.google.devtools.ksp.processing.Dependencies
 import com.google.devtools.ksp.processing.KSPLogger
@@ -28,27 +29,13 @@ import com.google.devtools.ksp.processing.Resolver
 import com.google.devtools.ksp.processing.SymbolProcessor
 import com.google.devtools.ksp.symbol.ClassKind
 import com.google.devtools.ksp.symbol.KSAnnotated
-import com.google.devtools.ksp.symbol.KSCallableReference
 import com.google.devtools.ksp.symbol.KSClassDeclaration
-import com.google.devtools.ksp.symbol.KSFunctionDeclaration
-import com.google.devtools.ksp.symbol.KSType
-import com.google.devtools.ksp.symbol.KSValueParameter
-import com.squareup.kotlinpoet.AnnotationSpec
 import com.squareup.kotlinpoet.ClassName
-import com.squareup.kotlinpoet.CodeBlock
 import com.squareup.kotlinpoet.FileSpec
 import com.squareup.kotlinpoet.FunSpec
-import com.squareup.kotlinpoet.KModifier
-import com.squareup.kotlinpoet.ParameterSpec
-import com.squareup.kotlinpoet.PropertySpec
-import com.squareup.kotlinpoet.TypeName
 import com.squareup.kotlinpoet.TypeSpec
 import com.squareup.kotlinpoet.ksp.toClassName
-import com.squareup.kotlinpoet.ksp.toTypeName
 import com.squareup.kotlinpoet.ksp.writeTo
-import java.lang.reflect.Type
-import kotlin.jvm.Throws
-import kotlin.math.log
 
 /**
  * SymbolProcessor는 플러그인이 Kotlin Symbol Processing에 통합하기 위해 사용하는 인터페이스입니다.
@@ -72,6 +59,41 @@ class KspLinkProcessor(
      */
     @OptIn(KspExperimental::class)
     override fun process(resolver: Resolver): List<KSAnnotated> {
+        val annotateds1 = resolver
+            .getSymbolsWithAnnotation<KspLinkTest>()
+            .filterIsInstance<KSClassDeclaration>()
+
+        annotateds1.forEach {
+            it.getAllFunctions().forEach {
+                logger.d(it.simpleName.asString())
+            }
+
+        }
+        val annotateds = resolver
+            .getSymbolsWithAnnotation<KspLinkApp>()
+            .filterIsInstance<KSClassDeclaration>()
+        annotateds.forEach { cls ->
+            cls.getAnnotationsByType(KspLinkApp::class).forEach { a ->
+                runCatching {
+                    a.type to a.value
+                }.onSuccess {
+                    error("${cls.simpleName} property is not member of KClass")
+                }.onFailure { e ->
+                    if (e is KSTypeNotPresentException) {
+                        val declaration = e.ksType.declaration
+                        if (declaration is KSClassDeclaration) {
+                            logger.d("${declaration} ${a.value}")
+                        } else {
+                            error("${declaration.simpleName} property is not member of Class")
+                        }
+                    } else {
+                        error(e.message.toString())
+                    }
+                }
+            }
+        }
+
+
         val annotated = resolver
             .getSymbolsWithAnnotation<KspLink>()
             .filterIsInstance<KSClassDeclaration>()
@@ -131,13 +153,20 @@ class KspLinkProcessor(
                         val linkName = outputProperty.getAnnotationsByType(KspLinkName::class).firstOrNull()
 
 
+                        val custom = linkName?.custom
                         val target = linkName?.target
                         val strategy = linkName?.strategy
 
 
-                        if (target != null) {
+                        if (!custom.isNullOrBlank()) {
                             val name = outputProperty.simpleName.asString()
-                            code.submit("$name = entity.$target $strategy")
+                            code.submit("$name = $custom")
+                            continue
+                        }
+
+                        if (!target.isNullOrBlank()) {
+                            val name = outputProperty.simpleName.asString()
+                            code.submit("$name = entity.${target}$strategy")
                         } else {
                             val name = outputProperty.simpleName.asString()
                             code.submit("$name = entity.$name")
