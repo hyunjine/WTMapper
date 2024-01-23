@@ -5,15 +5,15 @@ import org.junit.Test
 class KspTest {
     data class KspEntity(
         val title: String?,
-        val subTitle: String,
+        val subTitle: String?,
         val content: String,
     )
 
     @KspLink(KspEntity::class)
     data class KspModel(
         val title: String?,
-        @KspLinkName("subTitle")
-        val titleSub: String,
+        @KspLinkName(target = "subTitle", strategy = "?: String.DEFAULT")
+        val titleSub: String?,
         val content: String,
     )
 
@@ -22,3 +22,6 @@ class KspTest {
 
     }
 }
+
+val String.Companion.DEFAULT
+    get() = ""

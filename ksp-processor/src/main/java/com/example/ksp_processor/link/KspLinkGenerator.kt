@@ -110,15 +110,6 @@ class KspLinkGenerator(
             .firstOrNull() ?: error("") // TODO 에러처리
         val fromProperties = primaryConstructor.parameters
 
-        for (property in fromProperties) {
-            val linkName = property.getAnnotationsByType(KspLinkName::class).firstOrNull()
-            if (linkName != null) {
-                logger.d(linkName.name)
-            } else {
-                // TODO 에러처리
-            }
-        }
-
         val inputClassName = input.toClassName()
         val outputClassName = output.toClassName()
 

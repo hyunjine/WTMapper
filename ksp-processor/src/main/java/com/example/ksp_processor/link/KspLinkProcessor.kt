@@ -125,15 +125,24 @@ class KspLinkProcessor(
                     val classNames = output.toClassName()
                     val code = TestList()
                     for (outputProperty in outputProperties) {
-                        val isNullable = outputProperty.type.resolve().isMarkedNullable
-                        val linkName = outputProperty.getAnnotationsByType(KspLinkName::class).firstOrNull()?.name
-                        if (linkName != null) {
+                        val a = input.getAllProperties().find { it.simpleName.asString() == outputProperty.simpleName.asString() }
+
+
+                        val linkName = outputProperty.getAnnotationsByType(KspLinkName::class).firstOrNull()
+
+
+                        val target = linkName?.target
+                        val strategy = linkName?.strategy
+
+
+                        if (target != null) {
                             val name = outputProperty.simpleName.asString()
-                            code.submit("$name = entity.$linkName")
+                            code.submit("$name = entity.$target $strategy")
                         } else {
                             val name = outputProperty.simpleName.asString()
                             code.submit("$name = entity.$name")
                         }
+
                     }
 
                     val function1 = FunSpec.builder("build").apply {
