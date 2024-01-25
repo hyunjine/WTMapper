@@ -7,8 +7,4 @@ import kotlin.reflect.KClass
 annotation class KspLink(
     val kClass: KClass<*>,
     val deprecated: Boolean = false
-) {
-    @Retention(AnnotationRetention.SOURCE)
-    @Target(AnnotationTarget.PROPERTY)
-    annotation class Default(val value: String)
-}
+)

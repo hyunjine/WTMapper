@@ -9,6 +9,7 @@ dependencies {
     ksp(libs.autoservice.ksp)
     implementation(project(":ksp-annotations"))
     implementation(kotlin("stdlib"))
+    implementation(kotlin("reflect"))
     implementation(libs.ksp.api)
     implementation(libs.autoservice.annotations)
     implementation(libs.kotlinPoet)

@@ -10,7 +10,11 @@ class KaptTest {
         val subTitle: String?,
         val rank: Int,
         val content: String,
-    )
+    ) {
+        fun getA(type: String): Int {
+            return 213
+        }
+    }
 
     data class KaptEntity(
         val seq: Long,

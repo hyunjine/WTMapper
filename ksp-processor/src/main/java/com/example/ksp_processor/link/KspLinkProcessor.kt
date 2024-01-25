@@ -22,20 +22,30 @@ import com.example.kps_annotations.KspLinkTest
 import com.google.devtools.ksp.KSTypeNotPresentException
 import com.google.devtools.ksp.KspExperimental
 import com.google.devtools.ksp.getAnnotationsByType
+import com.google.devtools.ksp.getDeclaredFunctions
 import com.google.devtools.ksp.processing.CodeGenerator
 import com.google.devtools.ksp.processing.Dependencies
 import com.google.devtools.ksp.processing.KSPLogger
 import com.google.devtools.ksp.processing.Resolver
 import com.google.devtools.ksp.processing.SymbolProcessor
-import com.google.devtools.ksp.symbol.ClassKind
 import com.google.devtools.ksp.symbol.KSAnnotated
 import com.google.devtools.ksp.symbol.KSClassDeclaration
+import com.google.devtools.ksp.symbol.KSFunction
+import com.google.devtools.ksp.symbol.KSFunctionDeclaration
+import com.google.devtools.ksp.symbol.KSNode
+import com.google.devtools.ksp.symbol.KSVisitor
+import com.google.devtools.ksp.visitor.KSDefaultVisitor
 import com.squareup.kotlinpoet.ClassName
 import com.squareup.kotlinpoet.FileSpec
 import com.squareup.kotlinpoet.FunSpec
 import com.squareup.kotlinpoet.TypeSpec
 import com.squareup.kotlinpoet.ksp.toClassName
+import com.squareup.kotlinpoet.ksp.toTypeName
 import com.squareup.kotlinpoet.ksp.writeTo
+import javax.lang.model.element.ElementKind
+import kotlin.math.log
+import kotlin.reflect.full.declaredFunctions
+
 
 /**
  * SymbolProcessor는 플러그인이 Kotlin Symbol Processing에 통합하기 위해 사용하는 인터페이스입니다.
@@ -59,39 +69,44 @@ class KspLinkProcessor(
      */
     @OptIn(KspExperimental::class)
     override fun process(resolver: Resolver): List<KSAnnotated> {
-        val annotateds1 = resolver
-            .getSymbolsWithAnnotation<KspLinkTest>()
-            .filterIsInstance<KSClassDeclaration>()
-
-        annotateds1.forEach {
-            it.getAllFunctions().forEach {
-                logger.d(it.simpleName.asString())
-            }
-
-        }
-        val annotateds = resolver
-            .getSymbolsWithAnnotation<KspLinkApp>()
-            .filterIsInstance<KSClassDeclaration>()
-        annotateds.forEach { cls ->
-            cls.getAnnotationsByType(KspLinkApp::class).forEach { a ->
-                runCatching {
-                    a.type to a.value
-                }.onSuccess {
-                    error("${cls.simpleName} property is not member of KClass")
-                }.onFailure { e ->
-                    if (e is KSTypeNotPresentException) {
-                        val declaration = e.ksType.declaration
-                        if (declaration is KSClassDeclaration) {
-                            logger.d("${declaration} ${a.value}")
-                        } else {
-                            error("${declaration.simpleName} property is not member of Class")
-                        }
-                    } else {
-                        error(e.message.toString())
-                    }
-                }
-            }
-        }
+//        val annotateds1 = resolver
+//            .getSymbolsWithAnnotation<KspLinkTest>()
+//            .filterIsInstance<KSClassDeclaration>()
+//
+//        annotateds1.forEach {
+//
+//            it.getDeclaredFunctions().forEach { a ->
+//                logger.d("forEach: ${a.returnType}")
+//
+//            }
+//        }
+//
+//        fun asd(dd: KSFunction) {
+//            dd.extensionReceiverType
+//        }
+//        val annotateds = resolver
+//            .getSymbolsWithAnnotation<KspLinkApp>()
+//            .filterIsInstance<KSClassDeclaration>()
+//        annotateds.forEach { cls ->
+//            cls.getAnnotationsByType(KspLinkApp::class).forEach { a ->
+//                runCatching {
+//                    a.type to a.value
+//                }.onSuccess {
+//                    error("${cls.simpleName} property is not member of KClass")
+//                }.onFailure { e ->
+//                    if (e is KSTypeNotPresentException) {
+//                        val declaration = e.ksType.declaration
+//                        if (declaration is KSClassDeclaration) {
+//                            logger.d("${declaration} ${a.value}")
+//                        } else {
+//                            error("${declaration.simpleName} property is not member of Class")
+//                        }
+//                    } else {
+//                        error(e.message.toString())
+//                    }
+//                }
+//            }
+//        }
 
 
         val annotated = resolver
@@ -106,6 +121,30 @@ class KspLinkProcessor(
     }
 
 
+    private fun asd(element: KSFunctionDeclaration) {
+//        val methodElement = element
+//
+//        // Check if the element has the correct return type and parameters
+//        if (methodElement.returnType.toString() == "java.lang.Long" && methodElement.parameters.size == 1 && methodElement.parameters[0] asType()
+//                .toString() == "java.lang.Long"
+//        ) {
+//            methodElement.findOverridee()
+//
+//            // Get the value of the Named annotation
+//            val namedAnnotation: Named = methodElement.getAnnotation(Named::class.java)
+//            val methodName: String = namedAnnotation.value()
+//
+//            // Execute the method
+//            try {
+//                val age = 25L // Pass an example age
+//                val result = methodElement.invoke(null, age) as Long
+//                println("Method $methodName result: $result")
+//            } catch (e: ReflectiveOperationException) {
+//                e.printStackTrace()
+//            }
+//        }
+
+    }
     @OptIn(KspExperimental::class)
     private fun filterKClass(cls: KSClassDeclaration) {
         runCatching {
@@ -124,7 +163,6 @@ class KspLinkProcessor(
                 error(e.message.toString())
             }
         }
-
     }
 
     /**
@@ -135,6 +173,11 @@ class KspLinkProcessor(
      */
     @OptIn(KspExperimental::class)
     private fun parseKSClassDeclaration(input: KSClassDeclaration, output: KSClassDeclaration) {
+        val function = output.getDeclaredFunctions()
+            .filter { it.simpleName.asString() == "mapUserType" }
+            .first()
+
+
         val inputClassName = input.toClassName()
         val linkerClassName = ClassName(output.packageName.asString(), output.simpleName.asString() + "Linker")
         val outputProperties = output.getAllProperties()
@@ -149,14 +192,11 @@ class KspLinkProcessor(
                     for (outputProperty in outputProperties) {
                         val a = input.getAllProperties().find { it.simpleName.asString() == outputProperty.simpleName.asString() }
 
-
                         val linkName = outputProperty.getAnnotationsByType(KspLinkName::class).firstOrNull()
-
 
                         val custom = linkName?.custom
                         val target = linkName?.target
                         val strategy = linkName?.strategy
-
 
                         if (!custom.isNullOrBlank()) {
                             val name = outputProperty.simpleName.asString()

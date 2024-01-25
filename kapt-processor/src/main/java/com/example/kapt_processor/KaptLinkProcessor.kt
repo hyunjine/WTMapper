@@ -9,13 +9,19 @@ import com.squareup.kotlinpoet.TypeName
 import com.squareup.kotlinpoet.TypeSpec
 import com.squareup.kotlinpoet.asClassName
 import com.squareup.kotlinpoet.asTypeName
+import com.sun.source.tree.MethodTree
+import com.sun.source.util.TreePath
+import com.sun.source.util.TreePathScanner
+import com.sun.source.util.Trees
 import java.io.File
+import java.lang.Exception
 import javax.annotation.processing.AbstractProcessor
 import javax.annotation.processing.Processor
 import javax.annotation.processing.RoundEnvironment
 import javax.lang.model.SourceVersion
 import javax.lang.model.element.Element
 import javax.lang.model.element.ElementKind
+import javax.lang.model.element.ExecutableElement
 import javax.lang.model.element.TypeElement
 import javax.lang.model.type.DeclaredType
 import javax.lang.model.type.MirroredTypeException
@@ -23,6 +29,10 @@ import javax.lang.model.type.PrimitiveType
 import javax.lang.model.type.TypeMirror
 import javax.lang.model.util.ElementFilter
 import javax.tools.Diagnostic
+import kotlin.reflect.jvm.internal.impl.descriptors.Named
+
+
+
 
 @AutoService(Processor::class)
 class KaptLinkProcessor : AbstractProcessor() {
@@ -54,7 +64,6 @@ class KaptLinkProcessor : AbstractProcessor() {
         val elements = roundEnv
             .getElementsAnnotatedWith(KaptLink::class.java)
             .filterIsInstance<TypeElement>()
-        noteMessage { elements }
         if (elements.isEmpty()) {
             noteMessage { "Not able to find @${KaptLink::class.java.name} in this roundS $roundEnv" }
             return false
@@ -79,6 +88,13 @@ class KaptLinkProcessor : AbstractProcessor() {
             annotation.kClass
         }.onFailure { exception ->
                 if (exception is MirroredTypeException) {
+                    element.enclosedElements.forEach {
+                        if (it is ExecutableElement) {
+
+                            noteMessage { it.receiverType }
+                        }
+                    }
+
                     val packageName = processingEnv.elementUtils.getPackageOf(element).toString()
                     val fileName = "${element.simpleName}LinkerUtil"
 

@@ -13,4 +13,7 @@ dependencies {
     kapt(project(":kapt-processor"))
     implementation(project(":ksp-annotations"))
     ksp(project(":ksp-processor"))
+
+    implementation(libs.mapstruct)
+    kapt(libs.mapstruct.processor)
 }

@@ -8,6 +8,8 @@ kotlinPoet = "1.15.3"
 
 autoservice = "1.1.0"
 
+mapstruct = "1.5.5.Final"
+
 [libraries]
 # For a description of the below dependencies, see the main project README
 junit = { group = "junit", name = "junit", version.ref  = "junit" }
@@ -21,14 +23,10 @@ autoservice = { module = "com.google.auto.service:auto-service", version.ref = "
 autoservice-ksp = { module = "dev.zacsweers.autoservice:auto-service-ksp", version.ref = "autoservice"}
 autoservice-annotations = { module = "com.google.auto.service:auto-service-annotations", version.ref = "autoservice" }
 
+mapstruct = { module = "org.mapstruct:mapstruct", version.ref = "mapstruct" }
+mapstruct-processor = { module = "org.mapstruct:mapstruct-processor", version.ref = "mapstruct" }
+
 [bundles]
-#lint-api = [
-#    "kotlin-stdlib",
-#    "lint-api",
-#    # You typically don't need this one, but it does have some utilities
-#    # like the API database that some lint checks may want to use
-#    #"lint-checks",
-#]
 
 [plugins]
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }

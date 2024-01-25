@@ -22,10 +22,20 @@ class KspTest {
         val titleSub: String?,
         val content: String,
         @KspLinkName(target = "type", custom = "" +
-                "if (entity.type == \"normal\") KspTest.Type.NORMAL else KspTest.Type.DISABLE" +
+                "if (entity.type == \"normal\") " +
+                "KspTest.Type.NORMAL " +
+                "else " +
+                "KspTest.Type.DISABLE" +
                 "")
         val userType: Type
-    )
+    ) {
+        fun mapUserType(type: String): Type {
+            return when (type) {
+                "normal" -> Type.NORMAL
+                else -> Type.DISABLE
+            }
+        }
+    }
     enum class Type {
         NORMAL,
         DISABLE
@@ -50,10 +60,3 @@ val String.Companion.DEFAULT
 
 val Int.Companion.DEFAULT
     get() = 0
-
-@KspLinkTest
-class YoYo: KspLinkTestInterface {
-    override fun execute(): Any {
-        return "execute Any"
-    }
-}
